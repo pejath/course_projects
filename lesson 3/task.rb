@@ -15,97 +15,97 @@ class Station
     @trains.delete(train)
   end
 
-  def train_types
-    cargo = @trains.count { |train| train.type == 'cargo' }
-    passenger = @trains.count { |train| train.type == 'passenger' }
-    { cargo: cargo, passenger: passenger }
+  def train_count_types_by(type)
+    @trains.count { |train| train.type == type }
+  end
+
+  def train_types_by(type)
+    @trains.select { |train| train.type == type }
   end
 end
 
 class Route
-  attr_reader :start_station, :final_station
-
   def initialize(start_station, final_station)
-    @start_station = start_station
-    @final_station = final_station
+    @stations = [start_station, final_station]
     @way_station = []
   end
 
   def add_station(station)
-    @way_station << station
+    @stations.insert(-2, station)
   end
 
   def remove_station(station_name)
-    @way_station.delete_if { |station| station.name == station_name }
+    @stations.delete_if { |station| station.name == station_name }
   end
 
   def full_way
-    ([@start_station] << @way_station << @final_station).flatten
+    @stations
   end
 end
 
 class Train
   attr_accessor :speed, :route
-  attr_reader :vans_count, :number, :type
+  attr_reader :wagons_count, :number, :type
 
-  def initialize(number, type, vans_count = 0)
+  def initialize(number, type, wagons_count = 0)
     @number = number
     @type = type
-    @vans_count = vans_count
+    @wagons_count = wagons_count
     @speed = 0
-    @route_station = 0
+    @current_station_index = 0
   end
 
   def route=(route)
     @route = route
-    @station = @route.full_way[@route_station]
-    route.start_station.add_train(self)
+    route.full_way[0].add_train(self)
   end
 
-  def add_van
-    @speed != 0 ? 'train is moving' : @vans_count += 1
+  def add_wagon
+    @speed != 0 ? 'train is moving' : @wagons_count += 1
   end
 
-  def remove_van
-    if @speed.zero? && @vans_count != 0
-      @vans_count -= 1
+  def remove_wagon
+    if @speed.zero? && @wagons_count != 0
+      @wagons_count -= 1
     else
-      'check speed or vans count'
+      'check speed or wagons count'
+    end
+  end
+
+  def move_to_next_station
+    return 'Firstly add route' if @route.nil?
+
+    if next_station
+      current_station.send_train(self)
+      next_station.add_train(self)
+      @current_station_index += 1
+    else
+      'You are on the last station'
+    end
+  end
+
+  def move_to_prev_station
+    return 'Firstly add route' if @route.nil?
+
+    if previous_station
+      current_station.send_train(self)
+      previous_station.add_train(self)
+      @current_station_index -= 1
+    else
+      'You are on the first station'
     end
   end
 
   def next_station
-    return 'Firstly add route' if @route.nil?
+    @route.full_way[@current_station_index + 1] if @current_station_index + 1 <= @route.full_way.count - 1
+  end
 
-    if @route_station + 1 > @route.full_way.count - 1
-      'You are on the last station'
-    else
-      @station.send_train(self)
-      @route_station += 1
-      @station = @route.full_way[@route_station]
-      @station.add_train(self)
-    end
+  def current_station
+    @route.full_way[@current_station_index]
   end
 
   def previous_station
-    return 'Firstly add route' if @route.nil?
-
-    if (@route_station - 1).negative?
-      'You are on the first station'
-    else
-      @station.send_train(self)
-      @route_station -= 1
-      @station = @route.full_way[@route_station]
-      @station.add_train(self)
-    end
-  end
-
-  def near_stations
-    puts "previous #{@route.full_way[@route_station - 1].name}" if @route_station - 1 >= 0
-    puts "current #{@route.full_way[@route_station].name}"
-    if @route_station + 1 <= @route.full_way.count - 1
-      puts "next #{@route.full_way[@route_station + 1].name}"
-    end
+    @route.full_way[@current_station_index - 1] if @current_station_index - 1 >= 0
   end
 
   def speed_up
