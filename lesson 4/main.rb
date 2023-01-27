@@ -11,5 +11,4 @@ require_relative 'control_class'
 
 
 control = ControlClass.new
-control.seed
 control.start
