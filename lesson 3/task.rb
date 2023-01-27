@@ -25,21 +25,19 @@ class Station
 end
 
 class Route
+  attr_reader :stations
+
   def initialize(start_station, final_station)
     @stations = [start_station, final_station]
-    @way_station = []
   end
 
   def add_station(station)
     @stations.insert(-2, station)
   end
 
-  def remove_station(station_name)
-    @stations.delete_if { |station| station.name == station_name }
-  end
-
-  def full_way
-    @stations
+  # изучив вопрос выяснилось, что .last работает быстрее [-1]
+  def remove_station(station)
+    @stations.delete(station) unless [@stations.first, @stations.last].include?(station)
   end
 end
 
@@ -57,7 +55,7 @@ class Train
 
   def route=(route)
     @route = route
-    route.full_way[0].add_train(self)
+    route.stations[0].add_train(self)
   end
 
   def add_wagon
@@ -97,15 +95,15 @@ class Train
   end
 
   def next_station
-    @route.full_way[@current_station_index + 1] if @current_station_index + 1 <= @route.full_way.count - 1
+    @route.stations[@current_station_index + 1] if @current_station_index + 1 <= @route.stations.count - 1
   end
 
   def current_station
-    @route.full_way[@current_station_index]
+    @route.stations[@current_station_index]
   end
 
   def previous_station
-    @route.full_way[@current_station_index - 1] if @current_station_index - 1 >= 0
+    @route.stations[@current_station_index - 1] if @current_station_index - 1 >= 0
   end
 
   def speed_up
