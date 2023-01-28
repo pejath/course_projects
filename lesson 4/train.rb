@@ -15,7 +15,7 @@ class Train
   end
 
   def add_wagon(wagon)
-    @speed != 0 ? puts 'train is moving' : @wagons << wagon
+    @speed != 0 ? (puts 'train is moving') : @wagons << wagon
   end
 
   def remove_wagon(wagon)

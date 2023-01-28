@@ -69,13 +69,46 @@ class ControlClass
     puts @trains.map(&:number)
   end
 
-  # все классы которые ниже были отделены в private по сокльку пользователь не должен на прямую с ними взаимодействовать
+  # все методы которые ниже были отделены в private по сокльку пользователь не должен на прямую с ними взаимодействовать
   # поскольку для этого есть интерфейс
   private
 
+  def input_check(type = nil, &block)
+    loop do
+      print '-> '
+      res = gets.chomp
+      return nil if res == 'exit'
+
+      if block_given? && res.match(/[a-zA-Z]+/) || res.strip.empty?
+        puts 'Write correct index'
+        next
+      end
+
+      res = block.call(res) if block_given?
+      case res
+      when String
+        return res unless res.strip.empty?
+
+        puts 'Value can\'t be empty (exit for stop)'
+      when Array
+        return res
+      when Integer
+
+        return type[res] unless type[res].nil?
+
+        puts 'Write correct index'
+      else
+        puts 'Something went wrong'
+        return nil
+      end
+    end
+  end
+
   def create_station
     print 'write station name: '
-    station_name = gets.chomp
+    station_name = input_check
+    return if station_name.nil?
+
     @stations << Station.new(station_name)
   end
 
@@ -86,10 +119,14 @@ class ControlClass
 
     case command
     when '1'
-      num = gets.chomp
+      num = input_check
+      return if num.nil?
+
       @trains << PassengerTrain.new(num)
     when '2'
-      num = gets.chomp
+      num = input_check
+      return if num.nil?
+
       @trains << CargoTrain.new(num)
     end
   end
@@ -98,20 +135,21 @@ class ControlClass
     stations_list
     puts 'for selecting the first and the last stations'
     print 'first: '
-    first = gets.chomp.to_i
+    first = input_check(@stations, &:to_i)
     print 'last: '
-    last = gets.chomp.to_i
+    last = input_check(@stations, &:to_i)
 
-    @routes << Route.new(@stations[first], @stations[last])
+    @routes << Route.new(first, last)
   end
 
   def add_route
     routes_list
     puts 'write number of route'
-    route = @routes[gets.chomp.to_i]
+    route = input_check(@routes, &:to_i)
     stations_list
     puts 'write stations you want to add separated by a space'
-    stations = gets.chomp.split.map(&:to_i)
+    lmbd = ->(str) { str.split.map(&:to_i) }
+    stations = input_check(&block = lmbd)
     stations.each do |station|
       next if @stations[station].nil?
 
@@ -122,10 +160,11 @@ class ControlClass
   def remove_route
     routes_list
     puts 'write number of route'
-    route = @routes[gets.chomp.to_i]
+    route = input_check(@routes, &:to_i)
     puts route.stations.map(&:name)
     puts 'write stations you want to remove separated by a space'
-    stations = gets.chomp.split.map(&:to_i).uniq.sort.reverse
+    lmbd = ->(str) { str.split.map(&:to_i).uniq.sort.reverse }
+    stations = input_check(&block = lmbd)
     stations.each do |station|
       route.remove_station(route.stations[station])
     end
@@ -134,10 +173,10 @@ class ControlClass
   def add_train_route
     trains_list
     puts 'select train'
-    train = @trains[gets.chomp.to_i]
+    train = input_check(@trains, &:to_i)
     routes_list
     puts 'write number of route'
-    route = @routes[gets.chomp.to_i]
+    route = input_check(@routes, &:to_i)
 
     train.route = route
   end
@@ -145,11 +184,12 @@ class ControlClass
   def add_wagon
     trains_list
     puts 'select train'
-    train = @trains[gets.chomp.to_i]
+    train = input_check(@trains, &:to_i)
 
     puts @wagons
-    puts 'select wagon you want to add separated by spaces'
-    wagons = gets.chomp.split.map(&:to_i)
+    puts 'select wagon you want to add separated by spaces (will be added only uniq wagons)'
+    lmbd = ->(str) { str.split.map(&:to_i).uniq }
+    wagons = input_check(&block = lmbd)
 
     wagons.each do |num|
       train.add_wagon(@wagons[num])
@@ -159,11 +199,12 @@ class ControlClass
   def remove_wagon
     trains_list
     puts 'select train'
-    train = @trains[gets.chomp.to_i]
+    train = input_check(@trains, &:to_i)
 
     puts train.wagons
     puts 'select wagon you want to remove separated by spaces'
-    wagons = gets.chomp.split.map(&:to_i).uniq.sort.reverse
+    lmbd = ->(str) { str.split.map(&:to_i).uniq.sort.reverse }
+    wagons = input_check(&block = lmbd)
 
     wagons.each do |num|
       train.remove_wagon(train.wagons[num])
@@ -173,7 +214,7 @@ class ControlClass
   def move_train
     trains_list
     puts 'select train'
-    train = @trains[gets.chomp.to_i]
+    train = input_check(@trains, &:to_i)
 
     puts 'select where train goes \'forward\', \'backward\' '
     case gets.chomp
