@@ -16,8 +16,8 @@ class ControlClass
 
     case command
     when 'help'
-      puts "\t1 - create station \n \t2 - create train \n \t3 - route menu \n \t4 - set route for train \n \t5 - add wagon
-  \t6 - remove wagon \n \t7 - move train \n \t8 - show stations"
+      puts "\t1 - create station \n \t2 - create train \n \t3 - route menu \n \t4 - set route for train \n \t5 - wagon menu
+  \t6 - move train \n \t7 - show stations"
     when '1'
       create_station
     when '2'
@@ -37,12 +37,20 @@ class ControlClass
     when '4'
       add_train_route
     when '5'
-      add_wagon
+      puts "select option \n \t1 - create new wagon \n \t2 - for adding wagon for existing train
+  \t3 - for removing wagon for existing train \n \tENTER for exit"
+      case gets.chomp
+      when '1'
+        puts "select option \n \t1 - passenger wagon \n \t2 - cargo wagon \n \tENTER for exit"
+        create_wagon(gets.chomp)
+      when '2'
+        add_wagon
+      when '3'
+        remove_wagon
+      end
     when '6'
-      remove_wagon
-    when '7'
       move_train
-    when '8'
+    when '7'
       @stations.each do |station|
         puts station.name
         print "\t" + station.trains.map(&:number).join(', ') + "\n"
@@ -116,18 +124,17 @@ class ControlClass
     return unless ['1', '2'].include?(command)
 
     print 'write train number: '
+    num = input_check
+    return if num.nil?
+
+    name = input_check
+    return if name.nil?
 
     case command
     when '1'
-      num = input_check
-      return if num.nil?
-
-      @trains << PassengerTrain.new(num)
+      @trains << PassengerTrain.new(num, name)
     when '2'
-      num = input_check
-      return if num.nil?
-
-      @trains << CargoTrain.new(num)
+      @trains << CargoTrain.new(num, name)
     end
   end
 
@@ -179,6 +186,20 @@ class ControlClass
     route = input_check(@routes, &:to_i)
 
     train.route = route
+  end
+  def create_wagon(command)
+    return unless ['1', '2'].include?(command)
+
+    print 'write wagon\' company name: '
+    name = input_check
+    return if name.nil?
+
+    case command
+    when '1'
+      @wagons << PassengerWagon.new(name)
+    when '2'
+      @trains << CargoWagon.new(name)
+    end
   end
 
   def add_wagon

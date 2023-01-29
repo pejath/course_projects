@@ -1,5 +1,8 @@
 class Wagon
+  include Company
   attr_reader :type
 
-  def initialize; end
+  def initialize(company)
+    @company_name = company
+  end
 end

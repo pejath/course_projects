@@ -1,12 +1,24 @@
 class Train
+  include Company
+  include InstanceCounter
+
   attr_accessor :speed, :route
   attr_reader :wagons, :number, :type
 
-  def initialize(number)
+  @@trains = []
+  def initialize(number, company)
     @number = number
+    @company_name = company
     @wagons = []
     @speed = 0
     @current_station_index = 0
+    @@trains << self
+    register_instance
+  end
+
+  def self.find(num)
+    trains = @@trains.select { |train| train.number == num }
+    nil if trains.empty?
   end
 
   def route=(route)
