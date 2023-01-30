@@ -2,7 +2,7 @@ class Wagon
   include Company
   attr_reader :type
 
-  def initialize(company)
-    @company_name = company
+  def initialize(company_name)
+    @company_name = company_name
   end
 end

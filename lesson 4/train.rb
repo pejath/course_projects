@@ -6,9 +6,9 @@ class Train
   attr_reader :wagons, :number, :type
 
   @@trains = []
-  def initialize(number, company)
+  def initialize(number, company_name)
     @number = number
-    @company_name = company
+    @company_name = company_name
     @wagons = []
     @speed = 0
     @current_station_index = 0
@@ -17,8 +17,7 @@ class Train
   end
 
   def self.find(num)
-    trains = @@trains.select { |train| train.number == num }
-    nil if trains.empty?
+    @@trains.find { |train| train.number == num }
   end
 
   def route=(route)
