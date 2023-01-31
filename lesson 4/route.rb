@@ -5,6 +5,18 @@ class Route
 
   def initialize(start_station, final_station)
     @stations = [start_station, final_station]
+    validate!
+  end
+
+  def validate!
+    raise 'Should be at least 2 stations on route' if stations.size < 2
+  end
+
+  def valid?
+    validate!
+    true
+  rescue StandardError
+    false
   end
 
   def add_station(station)

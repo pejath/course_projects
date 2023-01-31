@@ -5,6 +5,8 @@ class Train
   attr_accessor :speed, :route
   attr_reader :wagons, :number, :type
 
+  NUMBER_REGEX = /^\w{3}-?\w{2}$/i.freeze
+
   @@trains = []
   def initialize(number, company_name)
     @number = number
@@ -12,6 +14,7 @@ class Train
     @wagons = []
     @speed = 0
     @current_station_index = 0
+    validate!
     @@trains << self
     register_instance
   end
@@ -20,25 +23,39 @@ class Train
     @@trains.find { |train| train.number == num }
   end
 
+  def validate!
+    raise 'Number can\'t be empty' if number.nil?
+    raise 'Company name can\'t be empty' if company_name.nil?
+    raise 'Incorrect number format' unless number =~ NUMBER_REGEX
+  end
+
+  def valid?
+    validate!
+    true
+  rescue StandardError
+    false
+  end
+
   def route=(route)
     @route = route
     route.stations[0].add_train(self)
   end
 
   def add_wagon(wagon)
-    @speed != 0 ? (puts 'train is moving') : @wagons << wagon
+    @speed != 0 ? (raise 'You can\'t remove wagons while moving') : @wagons << wagon
   end
 
   def remove_wagon(wagon)
     if @speed.zero?
       @wagons.delete(wagon)
     else
-      puts 'check speed or wagons count'
+      raise 'You can\'t remove wagons while moving' unless speed.zero? # стоило ли это переделывть с puts...
+      raise 'There is no wagons' if wagons.size.zero?
     end
   end
 
   def move_to_next_station
-    return 'Firstly add route' if @route.nil?
+    raise 'Firstly add route' if @route.nil?
 
     if next_station
       current_station.send_train(self)
@@ -50,7 +67,7 @@ class Train
   end
 
   def move_to_prev_station
-    return puts 'Firstly add route' if @route.nil?
+    raise 'Firstly add route' if @route.nil?
 
     if previous_station
       current_station.send_train(self)

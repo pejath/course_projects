@@ -8,11 +8,23 @@ class Station
   def initialize(name)
     @name = name
     @trains = []
+    validate!
     @@stations << self
   end
 
   def self.all
     @@stations
+  end
+
+  def validate!
+    raise 'Name can\' be empty ' if name.nil?
+  end
+
+  def valid?
+    validate!
+    true
+  rescue StandardError
+    false
   end
 
   def add_train(train)

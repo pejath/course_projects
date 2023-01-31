@@ -53,7 +53,7 @@ class ControlClass
     when '7'
       @stations.each do |station|
         puts station.name
-        print "\t" + station.trains.map(&:number).join(', ') + "\n"
+        print "\t#{station.trains.map(&:number).join(', ')}\n"
       end
     when 'exit'
       return
@@ -87,7 +87,7 @@ class ControlClass
       res = gets.chomp
       return nil if res == 'exit'
 
-      if block_given? && res.match(/[a-zA-Z]+/) || res.strip.empty?
+      if block_given? && (res.match(/[a-zA-Z]+/) || res.strip.empty?)
         puts 'Write correct index'
         next
       end
@@ -101,7 +101,6 @@ class ControlClass
       when Array
         return res
       when Integer
-
         return type[res] unless type[res].nil?
 
         puts 'Write correct index'
@@ -118,6 +117,10 @@ class ControlClass
     return if station_name.nil?
 
     @stations << Station.new(station_name)
+    puts "#{@stations.last} created"
+  rescue StandardError => e
+    puts "Error: #{e.message}"
+    create_station
   end
 
   def create_train(command)
@@ -127,6 +130,7 @@ class ControlClass
     num = input_check
     return if num.nil?
 
+    print 'write company name: '
     name = input_check
     return if name.nil?
 
@@ -136,6 +140,10 @@ class ControlClass
     when '2'
       @trains << CargoTrain.new(num, name)
     end
+    puts "#{@trains.last} created"
+  rescue StandardError => e
+    puts "Error: #{e.message}"
+    create_train(command)
   end
 
   def create_route
@@ -147,6 +155,10 @@ class ControlClass
     last = input_check(@stations, &:to_i)
 
     @routes << Route.new(first, last)
+    puts "#{@routes.last} created"
+  rescue StandardError => e
+    puts "Error: #{e.message}"
+    create_route
   end
 
   def add_route
@@ -198,8 +210,12 @@ class ControlClass
     when '1'
       @wagons << PassengerWagon.new(name)
     when '2'
-      @trains << CargoWagon.new(name)
+      @wagons << CargoWagon.new(name)
     end
+    puts "#{@wagons.last} created"
+  rescue StandardError => e
+    puts "Error: #{e.message}"
+    create_wagon(command)
   end
 
   def add_wagon
