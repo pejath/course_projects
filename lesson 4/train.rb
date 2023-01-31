@@ -24,9 +24,11 @@ class Train
   end
 
   def validate!
-    raise 'Number can\'t be empty' if number.nil?
-    raise 'Company name can\'t be empty' if company_name.nil?
-    raise 'Incorrect number format' unless number =~ NUMBER_REGEX
+    errors = []
+    errors << 'Number can\'t be empty' if number.nil?
+    errors << 'Company name can\'t be empty' if company_name.nil?
+    errors << 'Incorrect number format' unless number =~ NUMBER_REGEX
+    raise errors.join('.') unless errors.empty?
   end
 
   def valid?

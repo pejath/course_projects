@@ -120,7 +120,7 @@ class ControlClass
     puts "#{@stations.last} created"
   rescue StandardError => e
     puts "Error: #{e.message}"
-    create_station
+    retry
   end
 
   def create_train(command)
@@ -143,7 +143,7 @@ class ControlClass
     puts "#{@trains.last} created"
   rescue StandardError => e
     puts "Error: #{e.message}"
-    create_train(command)
+    retry
   end
 
   def create_route
@@ -158,7 +158,7 @@ class ControlClass
     puts "#{@routes.last} created"
   rescue StandardError => e
     puts "Error: #{e.message}"
-    create_route
+    retry
   end
 
   def add_route
@@ -215,7 +215,7 @@ class ControlClass
     puts "#{@wagons.last} created"
   rescue StandardError => e
     puts "Error: #{e.message}"
-    create_wagon(command)
+    retry
   end
 
   def add_wagon
