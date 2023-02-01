@@ -12,6 +12,12 @@ class Station
     @@stations << self
   end
 
+  def task_method(&block)
+    @trains.each do |train|
+      block.call(train)
+    end
+  end
+
   def self.all
     @@stations
   end

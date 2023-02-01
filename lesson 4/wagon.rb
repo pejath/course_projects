@@ -1,14 +1,15 @@
 class Wagon
   include Company
-  attr_reader :type
+  attr_reader :type, :number
 
-  def initialize(company_name)
-    @company_name = company_name
+  def initialize(attributes = {})
+    @number = rand(1..100)
+    @company_name = attributes[:company_name]
     validate!
   end
 
   def validate!
-    raise 'Company name can\'t be empty' if company_name.nil?
+    raise 'Company name can\'t be empty' if @company_name.nil?
   end
 
   def valid?

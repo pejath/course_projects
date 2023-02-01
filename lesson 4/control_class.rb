@@ -17,7 +17,7 @@ class ControlClass
     case command
     when 'help'
       puts "\t1 - create station \n \t2 - create train \n \t3 - route menu \n \t4 - set route for train \n \t5 - wagon menu
-  \t6 - move train \n \t7 - show stations"
+  \t6 - move train \n \t7 - show stations \n \t9 - show station info \n \t9 - show train info"
     when '1'
       create_station
     when '2'
@@ -38,7 +38,7 @@ class ControlClass
       add_train_route
     when '5'
       puts "select option \n \t1 - create new wagon \n \t2 - for adding wagon for existing train
-  \t3 - for removing wagon for existing train \n \tENTER for exit"
+  \t3 - for removing wagon from existing train \n \t4 - for space manipulation in wagon \n \tENTER for exit"
       case gets.chomp
       when '1'
         puts "select option \n \t1 - passenger wagon \n \t2 - cargo wagon \n \tENTER for exit"
@@ -47,6 +47,8 @@ class ControlClass
         add_wagon
       when '3'
         remove_wagon
+      when '4'
+        space_manipulation
       end
     when '6'
       move_train
@@ -55,6 +57,23 @@ class ControlClass
         puts station.name
         print "\t#{station.trains.map(&:number).join(', ')}\n"
       end
+    when '8'
+      stations_list
+      stations = input_check(@stations, &:to_i)
+      meth = proc { |train|
+        puts "#{train.number}, #{train.class}, #{train.wagons.count}"
+      }
+      stations.task_method(&block = meth)
+    when '9'
+      trains_list
+      puts 'select train'
+      train = input_check(@trains, &:to_i)
+      meth = proc { |wagon|
+        val = wagon.free_capacity if wagon.is_a? CargoWagon
+        val = wagon.empty_seats if wagon.is_a? PassengerWagon
+        puts "#{wagon.number}, #{wagon.type}, #{val}"
+      }
+      train.task_method(&block = meth)
     when 'exit'
       return
     else
@@ -208,14 +227,46 @@ class ControlClass
 
     case command
     when '1'
-      @wagons << PassengerWagon.new(name)
+      seats = input_check
+      return if seats.nil?
+
+      @wagons << PassengerWagon.new({ company_name: name, seats_number: seats })
     when '2'
-      @wagons << CargoWagon.new(name)
+      capacity = input_check
+      return if capacity.nil?
+
+      @wagons << CargoWagon.new({ company_name: name, seats_number: seats })
     end
     puts "#{@wagons.last} created"
   rescue StandardError => e
     puts "Error: #{e.message}"
     retry
+  end
+
+  def space_manipulation
+    puts @wagons
+    puts 'select wagon you want to add passengers count/free space'
+    wagon = input_check(@wagons, &:to_i)
+
+    case wagon
+    when PassengerWagon
+      puts 'How many do you want to add'
+      add_passengers(wagon)
+    when CargoWagon
+      puts 'How much do you want to add'
+      wagon.add_weight(gets.chomp.to_i)
+    end
+  rescue StandardError => e
+    puts "Error: #{e.message}"
+    retry
+  end
+
+  def add_passengers(wagon)
+    puts "Write how many passengers you want to add (free seats: #{wagon.empty_seats})"
+    num = gets.chomp.to_i
+    raise 'There is not enough seats' if num > wagon.empty_seats
+
+    num.times { wagon.add_passenger }
   end
 
   def add_wagon

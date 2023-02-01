@@ -23,6 +23,10 @@ class Train
     @@trains.find { |train| train.number == num }
   end
 
+  def task_method(&block)
+    @wagons.each(&block)
+  end
+
   def validate!
     errors = []
     errors << 'Number can\'t be empty' if number.nil?
