@@ -250,10 +250,9 @@ class ControlClass
 
     case wagon
     when PassengerWagon
-      puts 'How many do you want to add'
       add_passengers(wagon)
     when CargoWagon
-      puts 'How much do you want to add'
+      puts "How much do you want to add (free space: #{wagon.empty_capacity})"
       wagon.add_weight(gets.chomp.to_i)
     end
   rescue StandardError => e
@@ -262,9 +261,9 @@ class ControlClass
   end
 
   def add_passengers(wagon)
-    puts "Write how many passengers you want to add (free seats: #{wagon.empty_seats})"
+    puts "Write how many passengers you want to add (free seats: #{wagon.empty_capacity})"
     num = gets.chomp.to_i
-    raise 'There is not enough seats' if num > wagon.empty_seats
+    raise 'There is not enough seats' if num > wagon.empty_capacity
 
     num.times { wagon.add_passenger }
   end

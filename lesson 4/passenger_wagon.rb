@@ -2,24 +2,13 @@ class PassengerWagon < Wagon
   attr_reader :passengers
 
   def initialize(attributes = {})
-    @type = :passenger
-    @seats_number = attributes[:seats_number]
-    @passengers = 0
     super
+    @type = :passenger
   end
 
   def add_passenger
-    @passengers += 1 if @passengers + 1 <= @seats_number
-  end
+    raise 'not enough seats' if @occupied_capacity + 1 > @full_capacity
 
-  def empty_seats
-    @seats_number - @passengers
-  end
-
-  def validate!
-    errors = []
-    errors << 'Company name can\'t be empty' if @company_name.nil?
-    errors << 'Seats Number name can\'t be empty' if @seats_number.nil?
-    raise errors.join('. ') unless errors.empty?
+    @occupied_capacity += 1
   end
 end
