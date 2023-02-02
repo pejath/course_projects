@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ControlClass
   attr_reader :stations, :trains, :wagons, :routes
 
@@ -16,8 +18,8 @@ class ControlClass
 
     case command
     when 'help'
-      puts "\t1 - create station \n \t2 - create train \n \t3 - route menu \n \t4 - set route for train \n \t5 - wagon menu
-  \t6 - move train \n \t7 - show stations \n \t9 - show station info \n \t9 - show train info"
+      puts "\t1 - create station \n \t2 - create train \n \t3 - route menu \n \t4 - set route for train
+  \t5 - wagon menu \n \t6 - move train \n \t7 - show stations \n \t9 - show station info \n \t9 - show train info"
     when '1'
       create_station
     when '2'
@@ -60,20 +62,24 @@ class ControlClass
     when '8'
       stations_list
       stations = input_check(@stations, &:to_i)
+      return start if stations.nil?
+
       meth = proc { |train|
         puts "#{train.number}, #{train.class}, #{train.wagons.count}"
       }
-      stations.task_method(&block = meth)
+      stations.task_method(meth)
     when '9'
       trains_list
       puts 'select train'
       train = input_check(@trains, &:to_i)
+      return start if train.nil?
+
       meth = proc { |wagon|
         val = wagon.free_capacity if wagon.is_a? CargoWagon
         val = wagon.empty_seats if wagon.is_a? PassengerWagon
         puts "#{wagon.number}, #{wagon.type}, #{val}"
       }
-      train.task_method(&block = meth)
+      train.task_method(meth)
     when 'exit'
       return
     else
@@ -143,7 +149,7 @@ class ControlClass
   end
 
   def create_train(command)
-    return unless ['1', '2'].include?(command)
+    return unless %w[1 2].include?(command)
 
     print 'write train number: '
     num = input_check
@@ -167,11 +173,13 @@ class ControlClass
 
   def create_route
     stations_list
-    puts 'for selecting the first and the last stations'
-    print 'first: '
+    print "for selecting the first and the last stations \n first: "
     first = input_check(@stations, &:to_i)
+    return if first.nil?
+
     print 'last: '
     last = input_check(@stations, &:to_i)
+    return if last.nil?
 
     @routes << Route.new(first, last)
     puts "#{@routes.last} created"
@@ -184,10 +192,14 @@ class ControlClass
     routes_list
     puts 'write number of route'
     route = input_check(@routes, &:to_i)
+    return if route.nil?
+
     stations_list
     puts 'write stations you want to add separated by a space'
     lmbd = ->(str) { str.split.map(&:to_i) }
-    stations = input_check(&block = lmbd)
+    stations = input_check(&lmbd)
+    return if stations.nil?
+
     stations.each do |station|
       next if @stations[station].nil?
 
@@ -199,10 +211,14 @@ class ControlClass
     routes_list
     puts 'write number of route'
     route = input_check(@routes, &:to_i)
+    return if route.nil?
+
     puts route.stations.map(&:name)
     puts 'write stations you want to remove separated by a space'
     lmbd = ->(str) { str.split.map(&:to_i).uniq.sort.reverse }
-    stations = input_check(&block = lmbd)
+    stations = input_check(&lmbd)
+    return if stations.nil?
+
     stations.each do |station|
       route.remove_station(route.stations[station])
     end
@@ -212,30 +228,35 @@ class ControlClass
     trains_list
     puts 'select train'
     train = input_check(@trains, &:to_i)
+    return if train.nil?
+
     routes_list
     puts 'write number of route'
     route = input_check(@routes, &:to_i)
+    return if route.nil?
 
     train.route = route
   end
-  def create_wagon(command)
-    return unless ['1', '2'].include?(command)
 
-    print 'write wagon\' company name: '
+  def create_wagon(command)
+    return unless %w[1 2].include?(command)
+
+    print 'write wagon company name: '
     name = input_check
     return if name.nil?
 
+    print 'write wagon capacity: '
     case command
     when '1'
       seats = input_check
       return if seats.nil?
 
-      @wagons << PassengerWagon.new({ company_name: name, seats_number: seats })
+      @wagons << PassengerWagon.new(company_name: name, full_capacity: seats)
     when '2'
       capacity = input_check
       return if capacity.nil?
 
-      @wagons << CargoWagon.new({ company_name: name, seats_number: seats })
+      @wagons << CargoWagon.new(company_name: name, full_capacity: seats)
     end
     puts "#{@wagons.last} created"
   rescue StandardError => e
@@ -272,11 +293,13 @@ class ControlClass
     trains_list
     puts 'select train'
     train = input_check(@trains, &:to_i)
+    return if train.nil?
 
     puts @wagons
     puts 'select wagon you want to add separated by spaces (will be added only uniq wagons)'
     lmbd = ->(str) { str.split.map(&:to_i).uniq }
-    wagons = input_check(&block = lmbd)
+    wagons = input_check(&lmbd)
+    return if wagons.nil?
 
     wagons.each do |num|
       train.add_wagon(@wagons[num])
@@ -287,11 +310,13 @@ class ControlClass
     trains_list
     puts 'select train'
     train = input_check(@trains, &:to_i)
+    return if train.nil?
 
     puts train.wagons
     puts 'select wagon you want to remove separated by spaces'
     lmbd = ->(str) { str.split.map(&:to_i).uniq.sort.reverse }
-    wagons = input_check(&block = lmbd)
+    wagons = input_check(&lmbd)
+    return if wagons.nil?
 
     wagons.each do |num|
       train.remove_wagon(train.wagons[num])
@@ -302,6 +327,7 @@ class ControlClass
     trains_list
     puts 'select train'
     train = input_check(@trains, &:to_i)
+    return if train.nil?
 
     puts 'select where train goes \'forward\', \'backward\' '
     case gets.chomp

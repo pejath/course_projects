@@ -1,8 +1,11 @@
+# frozen_string_literal: true
+
 class Station
   include InstanceCounter
 
   attr_accessor :trains
   attr_reader :name
+
   @@stations = []
 
   def initialize(name)

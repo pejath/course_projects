@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 class Train
   include Company
   include InstanceCounter
 
-  attr_accessor :speed, :route
-  attr_reader :wagons, :number, :type
+  attr_accessor :speed
+  attr_reader :wagons, :number, :type, :route
 
   NUMBER_REGEX = /^\w{3}-?\w{2}$/i.freeze
 

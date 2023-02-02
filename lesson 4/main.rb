@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'instance_counter'
 require_relative 'company'
 require_relative 'train'
@@ -9,8 +11,6 @@ require_relative 'passenger_wagon'
 require_relative 'route'
 require_relative 'station'
 require_relative 'control_class'
-
-
 
 control = ControlClass.new
 control.start
