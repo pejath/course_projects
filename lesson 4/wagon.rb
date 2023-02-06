@@ -2,8 +2,11 @@
 
 class Wagon
   include Company
+  include Validation
   attr_reader :type, :number
 
+  validate :company_name, :presence
+  validate :full_capacity, :presence
   def initialize(attributes = {})
     @number = rand(1..100)
     @company_name = attributes[:company_name]
@@ -12,21 +15,7 @@ class Wagon
     validate!
   end
 
-  def validate!
-    errors = []
-    errors << 'Company name can\'t be empty' if @company_name.nil?
-    errors << 'Full Capacity name can\'t be empty' if @full_capacity.nil?
-    raise errors.join('. ') unless errors.empty?
-  end
-
   def empty_capacity
     @full_capacity - @occupied_capacity
-  end
-
-  def valid?
-    validate!
-    true
-  rescue StandardError
-    false
   end
 end

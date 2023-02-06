@@ -3,6 +3,8 @@
 class CargoWagon < Wagon
   attr_reader :space
 
+  validate :company_name, :presence
+  validate :full_capacity, :presence
   def initialize(attributes = {})
     super
     @type = :cargo

@@ -2,9 +2,12 @@
 
 class Station
   include InstanceCounter
+  include Validation
 
   attr_accessor :trains
   attr_reader :name
+
+  validate :name, :presence
 
   @@stations = []
 
@@ -23,17 +26,6 @@ class Station
 
   def self.all
     @@stations
-  end
-
-  def validate!
-    raise 'Name can\' be empty ' if name.nil?
-  end
-
-  def valid?
-    validate!
-    true
-  rescue StandardError
-    false
   end
 
   def add_train(train)

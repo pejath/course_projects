@@ -2,12 +2,19 @@
 
 class Train
   include Company
+  include Validation
+  extend Accessors
   include InstanceCounter
 
-  attr_accessor :speed
+  attr_accessor_with_history :speed
   attr_reader :wagons, :number, :type, :route
 
   NUMBER_REGEX = /^\w{3}-?\w{2}$/i.freeze
+
+  validate :number, :format, NUMBER_REGEX
+  validate :number, :presence
+  validate :company_name, :presence
+  validate :speed, :type, Integer
 
   @@trains = []
   def initialize(number, company_name)
@@ -29,21 +36,6 @@ class Train
     @wagons.each(&block)
   end
 
-  def validate!
-    errors = []
-    errors << 'Number can\'t be empty' if number.nil?
-    errors << 'Company name can\'t be empty' if company_name.nil?
-    errors << 'Incorrect number format' unless number =~ NUMBER_REGEX
-    raise errors.join('.') unless errors.empty?
-  end
-
-  def valid?
-    validate!
-    true
-  rescue StandardError
-    false
-  end
-
   def route=(route)
     @route = route
     route.stations[0].add_train(self)
@@ -57,7 +49,7 @@ class Train
     if @speed.zero?
       @wagons.delete(wagon)
     else
-      raise 'You can\'t remove wagons while moving' unless speed.zero? # стоило ли это переделывть с puts...
+      raise 'You can\'t remove wagons while moving' unless @speed.zero? # стоило ли это переделывть с puts...
       raise 'There is no wagons' if wagons.size.zero?
     end
   end
